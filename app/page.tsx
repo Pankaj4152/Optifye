@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { SYNTHETIC_ACCOUNT } from "@/lib/data";
 import { calculateOpportunityScore } from "@/lib/calculate-score";
 import { calculateRoi } from "@/lib/calculate-roi";
@@ -23,6 +23,12 @@ export default function SinglePageWorkspace() {
   ]);
   const [customPrompt, setCustomPrompt] = useState("");
   const [isCopilotLoading, setIsCopilotLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll chat to latest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [copilotMessages, isCopilotLoading]);
 
   // Selected candidate object
   const candidate = account.candidates.find((c) => c.id === selectedId) || account.candidates[0];
@@ -40,9 +46,10 @@ export default function SinglePageWorkspace() {
 
   // Handle Copilot Questions
   const handleAskCopilot = async (questionText: string) => {
-    if (!questionText.trim() || isCopilotLoading) return;
+    const trimmed = (questionText || "").trim();
+    if (!trimmed || isCopilotLoading) return;
 
-    setCopilotMessages((prev) => [...prev, { role: "user", content: questionText }]);
+    setCopilotMessages((prev) => [...prev, { role: "user", content: trimmed }]);
     setCustomPrompt("");
     setIsCopilotLoading(true);
 
@@ -51,7 +58,7 @@ export default function SinglePageWorkspace() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: questionText,
+          message: trimmed,
           context: {
             candidate,
             proven,
@@ -61,17 +68,23 @@ export default function SinglePageWorkspace() {
           },
         }),
       });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      
       const data = await res.json();
       setCopilotMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.reply || "Failed to generate copilot response." },
+        { role: "assistant", content: data.reply || "Unable to parse response." },
       ]);
     } catch (err) {
+      console.warn("Copilot API fallback:", err);
       setCopilotMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: `${candidate.name} is prioritized due to its ${score.outputGapPct}% output gap, ${candidate.operators} manual operators, and direct process similarity to ${proven.name}.`,
+          content: `**${candidate.name}** is prioritized due to its active **${score.outputGapPct}% output gap** (${candidate.currentMonthlyOutput.toLocaleString()} / ${candidate.targetMonthlyOutput.toLocaleString()} units/mo), **${candidate.operators} manual operators**, and direct process similarity to **${proven.name}**. At a **${recoveryRate}% recovery rate**, it generates an estimated **${roi.estimatedAnnualValueLakhsFormatted}/year** in recoverable margin.`,
         },
       ]);
     } finally {
@@ -278,27 +291,30 @@ export default function SinglePageWorkspace() {
             {/* 3 Instant 1-Click Questions */}
             <div className="flex flex-wrap gap-2">
               <button
+                type="button"
                 disabled={isCopilotLoading}
                 onClick={() => handleAskCopilot(`Why is ${candidate.name} ranked as the top recommendation?`)}
-                className="text-xs text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                className="text-xs text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
               >
                 <span>Why {candidate.name}?</span>
                 <ArrowUpRight className="w-3 h-3 text-neutral-500" />
               </button>
 
               <button
+                type="button"
                 disabled={isCopilotLoading}
                 onClick={() => handleAskCopilot("Why not Packaging A3 or Inspection B4?")}
-                className="text-xs text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                className="text-xs text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
               >
                 <span>Compare vs alternatives</span>
                 <ArrowUpRight className="w-3 h-3 text-neutral-500" />
               </button>
 
               <button
+                type="button"
                 disabled={isCopilotLoading}
                 onClick={() => handleAskCopilot(`What is the ROI if we only recover ${recoveryRate}% of the gap?`)}
-                className="text-xs text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                className="text-xs text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
               >
                 <span>Payback & Sensitivity ({recoveryRate}%)</span>
                 <ArrowUpRight className="w-3 h-3 text-neutral-500" />
@@ -323,13 +339,16 @@ export default function SinglePageWorkspace() {
                   <span>Computing factory context...</span>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Ask Input */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                handleAskCopilot(customPrompt);
+                if (customPrompt.trim()) {
+                  handleAskCopilot(customPrompt);
+                }
               }}
               className="flex gap-2"
             >
@@ -344,7 +363,7 @@ export default function SinglePageWorkspace() {
               <button
                 type="submit"
                 disabled={isCopilotLoading || !customPrompt.trim()}
-                className="bg-white hover:bg-neutral-200 disabled:opacity-30 text-black px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1"
+                className="bg-white hover:bg-neutral-200 disabled:opacity-30 text-black px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer"
               >
                 <Send className="w-3 h-3" />
                 <span>Ask</span>
