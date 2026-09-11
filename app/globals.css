@@ -21,3 +21,39 @@ body {
 .font-mono {
   font-family: 'Fragment Mono', monospace;
 }
+
+/* Custom Range Slider Styling for reliable cross-browser dragging */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #262626;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border: 2px solid #10b981;
+  transition: transform 0.1s ease;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border: 2px solid #10b981;
+}

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { SYNTHETIC_ACCOUNT, CandidateLine } from "@/lib/data";
+import { SYNTHETIC_ACCOUNT } from "@/lib/data";
 import { calculateOpportunityScore } from "@/lib/calculate-score";
 import { calculateRoi } from "@/lib/calculate-roi";
-import { CheckCircle2, ArrowRight, RefreshCw, Send, Loader2, Sparkles, ArrowUpRight } from "lucide-react";
+import { CheckCircle2, ArrowRight, Send, Loader2, Sparkles, ArrowUpRight } from "lucide-react";
 
 export default function SinglePageWorkspace() {
   const account = SYNTHETIC_ACCOUNT;
@@ -24,15 +24,19 @@ export default function SinglePageWorkspace() {
   const [customPrompt, setCustomPrompt] = useState("");
   const [isCopilotLoading, setIsCopilotLoading] = useState(false);
 
-  // Computed candidate list with scores & baseline ROI
-  const candidateList = account.candidates.map((c) => {
-    const score = calculateOpportunityScore(c, proven);
-    const roi = calculateRoi(c, recoveryRate);
-    return { candidate: c, score, roi };
-  }).sort((a, b) => b.score.totalScore - a.score.totalScore);
+  // Selected candidate object
+  const candidate = account.candidates.find((c) => c.id === selectedId) || account.candidates[0];
+  
+  // Deterministic calculations based on current dynamic recoveryRate
+  const score = calculateOpportunityScore(candidate, proven);
+  const roi = calculateRoi(candidate, recoveryRate);
 
-  const selectedItem = candidateList.find((item) => item.candidate.id === selectedId) || candidateList[0];
-  const { candidate, score, roi } = selectedItem;
+  // Computed candidate list for the selector menu
+  const candidateList = account.candidates.map((c) => {
+    const candidateScore = calculateOpportunityScore(c, proven);
+    const candidateRoi = calculateRoi(c, recoveryRate);
+    return { candidate: c, score: candidateScore, roi: candidateRoi };
+  }).sort((a, b) => b.score.totalScore - a.score.totalScore);
 
   // Handle Copilot Questions
   const handleAskCopilot = async (questionText: string) => {
@@ -113,7 +117,6 @@ export default function SinglePageWorkspace() {
           <div className="space-y-2">
             {candidateList.map((item, idx) => {
               const isSelected = item.candidate.id === selectedId;
-              const isTop = idx === 0;
 
               return (
                 <button
@@ -232,23 +235,27 @@ export default function SinglePageWorkspace() {
             </div>
 
             {/* Interactive Recovery Slider */}
-            <div className="pt-3 border-t border-neutral-800 space-y-2">
+            <div className="pt-3 border-t border-neutral-800 space-y-2.5">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-neutral-400 font-medium">Recovery Assumption:</span>
-                <span className="font-mono font-bold text-emerald-400 bg-neutral-900 px-2 py-0.5 rounded border border-neutral-800">
+                <span className="text-neutral-300 font-medium flex items-center gap-1.5">
+                  <span>Target Output Gap Recovery Rate:</span>
+                </span>
+                <span className="font-mono font-bold text-emerald-400 bg-neutral-900 px-2.5 py-1 rounded border border-neutral-800 text-sm">
                   {recoveryRate}% ({roi.recoverableUnitsAnnual.toLocaleString()} units/yr)
                 </span>
               </div>
-              <input
-                type="range"
-                min="5"
-                max="25"
-                step="1"
-                value={recoveryRate}
-                onChange={(e) => setRecoveryRate(Number(e.target.value))}
-                className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-white"
-              />
-              <div className="flex justify-between text-[10px] text-neutral-500 font-mono">
+              <div className="py-1">
+                <input
+                  type="range"
+                  min="5"
+                  max="25"
+                  step="1"
+                  value={recoveryRate}
+                  onChange={(e) => setRecoveryRate(Number(e.target.value))}
+                  className="w-full h-2.5 bg-neutral-800 rounded-lg cursor-pointer block"
+                />
+              </div>
+              <div className="flex justify-between text-[11px] text-neutral-500 font-mono">
                 <span>5% Conservative (₹{(calculateRoi(candidate, 5).estimatedAnnualValueInr / 100000).toFixed(2)}L)</span>
                 <span>10% Baseline</span>
                 <span>25% Optimistic (₹{(calculateRoi(candidate, 25).estimatedAnnualValueInr / 100000).toFixed(2)}L)</span>
