@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CandidateLine } from "@/lib/data";
 import { calculateRoi } from "@/lib/calculate-roi";
-import { Calculator, Sparkles, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 interface RoiCalculatorProps {
   candidate: CandidateLine;
@@ -11,7 +11,7 @@ interface RoiCalculatorProps {
 }
 
 export function RoiCalculator({ candidate, onRecoveryRateChange }: RoiCalculatorProps) {
-  const [recoveryRate, setRecoveryRate] = useState<number>(10); // default 10%
+  const [recoveryRate, setRecoveryRate] = useState<number>(10);
 
   const roi = calculateRoi(candidate, recoveryRate);
 
@@ -24,14 +24,13 @@ export function RoiCalculator({ candidate, onRecoveryRateChange }: RoiCalculator
   };
 
   return (
-    <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-800">
-        <div className="flex items-center gap-2">
-          <Calculator className="w-5 h-5 text-emerald-400" />
-          <div>
-            <h3 className="text-base font-bold text-white">Dynamic Expansion ROI Sensitivity</h3>
-            <p className="text-xs text-slate-400">Deterministic financial model quantifying value from gap recovery.</p>
-          </div>
+    <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-5 sm:p-6">
+      <div className="flex items-center justify-between pb-4 mb-4 border-b border-neutral-800">
+        <div>
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+            ROI Sensitivity Calculator
+          </h3>
+          <p className="text-xs text-neutral-400 mt-0.5">Estimated financial recovery from output gap closure.</p>
         </div>
 
         <button
@@ -39,21 +38,20 @@ export function RoiCalculator({ candidate, onRecoveryRateChange }: RoiCalculator
             setRecoveryRate(10);
             if (onRecoveryRateChange) onRecoveryRateChange(10);
           }}
-          className="text-xs text-slate-400 hover:text-white flex items-center gap-1 self-start sm:self-auto py-1 px-2 rounded hover:bg-slate-800 transition-colors"
-          title="Reset to 10% baseline"
+          className="text-xs text-neutral-500 hover:text-white flex items-center gap-1 py-1 px-2 rounded bg-neutral-900 border border-neutral-800 transition-colors"
         >
           <RefreshCw className="w-3 h-3" />
           <span>Reset (10%)</span>
         </button>
       </div>
 
-      {/* Recovery Rate Single Slider Control */}
-      <div className="bg-slate-950 p-4 rounded-lg border border-slate-800/80 mb-5">
+      {/* Recovery Rate Slider */}
+      <div className="bg-black p-4 rounded-lg border border-neutral-800 mb-4">
         <div className="flex justify-between items-center mb-2">
-          <label htmlFor="recovery-slider" className="text-xs font-semibold text-slate-300">
-            Target Output Gap Recovery Rate
+          <label htmlFor="recovery-slider" className="text-xs text-neutral-300 font-medium">
+            Recovery Assumption
           </label>
-          <span className="font-mono text-base font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded border border-emerald-800/40">
+          <span className="font-mono text-sm font-bold text-emerald-400 bg-neutral-900 px-2 py-0.5 rounded border border-neutral-800">
             {recoveryRate}%
           </span>
         </div>
@@ -66,52 +64,38 @@ export function RoiCalculator({ candidate, onRecoveryRateChange }: RoiCalculator
           step="1"
           value={recoveryRate}
           onChange={handleSliderChange}
-          className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+          className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-white"
         />
 
-        <div className="flex justify-between text-[11px] text-slate-500 mt-1 font-mono">
-          <span>5% (Conservative)</span>
-          <span>10% (Baseline)</span>
-          <span>25% (Optimistic)</span>
+        <div className="flex justify-between text-[11px] text-neutral-500 mt-1 font-mono">
+          <span>5% Conservative</span>
+          <span>10% Baseline</span>
+          <span>25% Optimistic</span>
         </div>
       </div>
 
-      {/* Formula & Calculation Breakdown */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-        <div className="bg-slate-950/60 p-3.5 rounded-lg border border-slate-800/60">
-          <div className="text-xs text-slate-400">Annual Output Gap</div>
-          <div className="text-lg font-mono font-bold text-white mt-0.5">
-            {roi.annualGapUnits.toLocaleString()} <span className="text-xs font-normal text-slate-500">units/yr</span>
-          </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            {roi.monthlyGapUnits.toLocaleString()} units/mo deficit × 12
+      {/* 3 Metric Pillars */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-black p-3 rounded-lg border border-neutral-900">
+          <div className="text-[11px] text-neutral-500">Annual Gap</div>
+          <div className="text-base font-mono font-bold text-white mt-0.5">
+            {roi.annualGapUnits.toLocaleString()} <span className="text-[10px] text-neutral-600 font-normal">units</span>
           </div>
         </div>
 
-        <div className="bg-slate-950/60 p-3.5 rounded-lg border border-slate-800/60">
-          <div className="text-xs text-slate-400">Recoverable Units</div>
-          <div className="text-lg font-mono font-bold text-emerald-400 mt-0.5">
-            {roi.recoverableUnitsAnnual.toLocaleString()} <span className="text-xs font-normal text-slate-500">units/yr</span>
-          </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            {roi.annualGapUnits.toLocaleString()} × {recoveryRate}% rate
+        <div className="bg-black p-3 rounded-lg border border-neutral-900">
+          <div className="text-[11px] text-neutral-500">Recoverable Units</div>
+          <div className="text-base font-mono font-bold text-white mt-0.5">
+            {roi.recoverableUnitsAnnual.toLocaleString()} <span className="text-[10px] text-neutral-600 font-normal">units</span>
           </div>
         </div>
 
-        <div className="bg-slate-950/60 p-3.5 rounded-lg border border-emerald-500/30 bg-emerald-950/10">
-          <div className="text-xs text-emerald-300 font-medium">Estimated Annual Value</div>
-          <div className="text-xl font-mono font-black text-emerald-300 mt-0.5">
-            {roi.estimatedAnnualValueLakhsFormatted} <span className="text-xs font-normal text-slate-400">/yr</span>
-          </div>
-          <div className="text-[11px] text-slate-400 mt-1">
-            {roi.recoverableUnitsAnnual.toLocaleString()} × ₹{candidate.contributionMarginPerUnit} margin
+        <div className="bg-black p-3 rounded-lg border border-neutral-800">
+          <div className="text-[11px] text-emerald-400">Recoverable Value</div>
+          <div className="text-base font-mono font-bold text-emerald-400 mt-0.5">
+            {roi.estimatedAnnualValueLakhsFormatted} <span className="text-[10px] text-neutral-400 font-normal">/yr</span>
           </div>
         </div>
-      </div>
-
-      <div className="mt-4 text-[11px] text-slate-500 flex items-center gap-1.5 italic">
-        <Sparkles className="w-3 h-3 text-slate-500 shrink-0" />
-        <span>Calculated deterministically using synthetic operating margins. Zero LLM hallucinations.</span>
       </div>
     </div>
   );

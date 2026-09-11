@@ -2,14 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Fragment+Mono&family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-  --background: #090a0f;
-  --foreground: #f1f5f9;
+  --background: #000000;
+  --foreground: #ffffff;
+  --card-bg: #0d0e12;
+  --card-border: #1e2029;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  min-height: 100vh;
+  color: #ffffff;
+  background-color: #000000;
+  font-family: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-family: 'Fragment Mono', monospace;
 }

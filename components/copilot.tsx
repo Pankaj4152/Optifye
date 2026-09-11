@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, Send, Sparkles, User, HelpCircle, Loader2 } from "lucide-react";
+import { ArrowUpRight, Send, Loader2 } from "lucide-react";
 import { CandidateLine, Deployment } from "@/lib/data";
 import { ScoreBreakdown } from "@/lib/calculate-score";
 import { RoiProjection } from "@/lib/calculate-roi";
@@ -29,16 +29,16 @@ export function Copilot({
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `I am the Optifye Expansion Copilot. I analyze structured factory data and explain why **${candidate.name}** was recommended for expansion based on the proven results from **${proven.name}**.`,
+      content: `I am the Optifye Copilot. Ask me why **${candidate.name}** was prioritized over other lines based on the **${proven.name}** deployment benchmark.`,
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const suggestedPrompts = [
-    `Why is ${candidate.name} ranked as the top candidate?`,
+    `Why is ${candidate.name} ranked #1?`,
     "Why not Packaging A3 or Inspection B4?",
-    `What is the financial impact at a ${recoveryRate}% recovery rate?`,
+    `What is the value at a ${recoveryRate}% recovery rate?`,
   ];
 
   const handleSendMessage = async (promptText?: string) => {
@@ -88,113 +88,91 @@ export function Copilot({
   };
 
   return (
-    <div className="bg-slate-900/70 border border-slate-800 rounded-xl flex flex-col h-[560px] overflow-hidden">
-      {/* Copilot Header */}
-      <div className="p-4 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-            <Bot className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>Expansion Copilot</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-mono">
-                Grounded AI
-              </span>
-            </h3>
-            <p className="text-[10px] text-slate-400">Answers strictly from deterministic data</p>
-          </div>
+    <div className="rounded-xl border border-neutral-800 bg-neutral-950 flex flex-col h-[520px] overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b border-neutral-800 bg-black flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+            AI Expansion Copilot
+          </h3>
+          <p className="text-[11px] text-neutral-400">Strictly grounded in deterministic metrics</p>
         </div>
-
-        <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-emerald-400" />
-          <span>Zero Math Hallucinations</span>
-        </div>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          Zero Hallucinations
+        </span>
       </div>
 
-      {/* Messages Scroll Area */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-3.5 text-xs">
+      {/* Messages */}
+      <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
         {messages.map((m, idx) => (
           <div
             key={idx}
-            className={`flex gap-2.5 ${
+            className={`flex ${
               m.role === "user" ? "justify-end" : "justify-start"
             }`}
           >
-            {m.role === "assistant" && (
-              <div className="w-6 h-6 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shrink-0 mt-0.5">
-                <Bot className="w-3.5 h-3.5 text-emerald-400" />
-              </div>
-            )}
-
             <div
-              className={`rounded-lg p-3 max-w-[85%] leading-relaxed ${
+              className={`rounded-lg p-3 max-w-[90%] leading-relaxed ${
                 m.role === "user"
-                  ? "bg-emerald-600 text-white font-medium"
-                  : "bg-slate-950/80 border border-slate-800 text-slate-200"
+                  ? "bg-white text-black font-medium"
+                  : "bg-black border border-neutral-800 text-neutral-200"
               }`}
             >
               <div className="whitespace-pre-wrap">{m.content}</div>
             </div>
-
-            {m.role === "user" && (
-              <div className="w-6 h-6 rounded bg-emerald-700 flex items-center justify-center text-white shrink-0 mt-0.5">
-                <User className="w-3.5 h-3.5" />
-              </div>
-            )}
           </div>
         ))}
 
         {isLoading && (
-          <div className="flex gap-2.5 items-center text-slate-400 text-xs">
-            <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-            <span>Analyzing structured factory metrics...</span>
+          <div className="flex items-center gap-2 text-neutral-400 text-xs">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+            <span>Analyzing factory metrics...</span>
           </div>
         )}
       </div>
 
-      {/* Suggested Prompts */}
-      <div className="px-4 py-2 border-t border-slate-800/80 bg-slate-950/40">
-        <div className="text-[10px] text-slate-500 font-medium mb-1.5 flex items-center gap-1">
-          <HelpCircle className="w-3 h-3" />
-          <span>Suggested Questions</span>
+      {/* Suggested Questions */}
+      <div className="px-3 py-2 border-t border-neutral-900 bg-black">
+        <div className="text-[10px] font-mono text-neutral-500 mb-1.5 uppercase">
+          Suggested Questions
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-col gap-1">
           {suggestedPrompts.map((prompt, idx) => (
             <button
               key={idx}
               disabled={isLoading}
               onClick={() => handleSendMessage(prompt)}
-              className="text-[11px] text-slate-300 bg-slate-900 hover:bg-slate-800 hover:text-white border border-slate-800 px-2 py-1 rounded text-left transition-colors disabled:opacity-50"
+              className="text-[11px] text-neutral-300 hover:text-white bg-neutral-900/60 hover:bg-neutral-800 border border-neutral-800/80 px-2.5 py-1.5 rounded text-left transition-colors flex items-center justify-between"
             >
-              {prompt}
+              <span>{prompt}</span>
+              <ArrowUpRight className="w-3 h-3 text-neutral-500 shrink-0 ml-1" />
             </button>
           ))}
         </div>
       </div>
 
-      {/* Input Bar */}
+      {/* Input Form */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
           handleSendMessage();
         }}
-        className="p-3 border-t border-slate-800 bg-slate-950 flex gap-2"
+        className="p-3 border-t border-neutral-800 bg-black flex gap-2"
       >
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask a question about this expansion opportunity..."
+          placeholder="Ask a question about this expansion..."
           disabled={isLoading}
-          className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+          className="flex-1 bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 font-sans"
         />
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 p-2 rounded-lg transition-colors font-bold"
+          className="bg-white hover:bg-neutral-200 disabled:opacity-30 text-black px-3 py-2 rounded-lg transition-colors font-medium text-xs flex items-center justify-center"
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-3.5 h-3.5" />
         </button>
       </form>
     </div>
